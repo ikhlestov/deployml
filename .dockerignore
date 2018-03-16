@@ -1,0 +1,4 @@
+.venv
+.git
+*.sublime-project
+*.sublime-workspace

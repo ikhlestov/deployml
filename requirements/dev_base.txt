@@ -1,0 +1,8 @@
+numpy
+ipython
+jupyter
+ipdb
+scikit-image
+tensorflow==1.5
+keras
+click

@@ -1,0 +1,10 @@
+# FROM python:3.6.4-alpine3.7
+FROM python:3.6.4-slim-jessie
+
+# copy our project
+WORKDIR /project
+ADD . /project
+
+# install requirements
+RUN pip install -r requirements/prod.txt --no-cache-dir
+RUN echo "FINISHED"
