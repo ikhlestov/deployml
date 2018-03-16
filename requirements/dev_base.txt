@@ -6,3 +6,5 @@ scikit-image
 tensorflow==1.5
 keras
 click
+opencv-python
+pytest
