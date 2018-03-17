@@ -8,3 +8,4 @@ keras
 click
 opencv-python
 pytest
+h5py

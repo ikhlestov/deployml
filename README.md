@@ -116,3 +116,19 @@ You my run tests:
 - At the various docker containers
 - Under the [tox](https://tox.readthedocs.io/en/latest/)
 
+## Converting to the tensorflow
+
+- Converting from keras to tensorflow:
+
+    - Get keras saved model `python3.6 converters/save_keras_model.py`
+    - Convert keras model to the tensorflow save format `python3.6 converters/convert_keras_to_tf.py`
+
+- Converting from PyTorch to tensorflow:
+
+    - Trough keras - [converter](https://github.com/nerox8664/pytorch2keras)
+    - Manually
+
+In any case you should know about:
+
+- [Open Neural Network Exchange](https://github.com/onnx/onnx)
+- [Deep Learning Model Convertors](https://github.com/ysh329/deep-learning-model-convertor)
