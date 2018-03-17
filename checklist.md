@@ -1,0 +1,9 @@
+- Get requirements for the model(speed, accuracy, size, etc.)
+- Simply train your model
+- Optimize your model with pruning, distilling
+- Freeze your graph, optimize it with internal tools, prune if necessary
+- Add back-end and tests
+- Profile your code
+- Automate building and deployment process
+- Add monitoring systems
+- Add scaling system if you want

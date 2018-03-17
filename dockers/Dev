@@ -37,6 +37,15 @@ RUN git clone https://github.com/tensorflow/tensorflow.git && \
 RUN cd tensorflow && \
     bazel build tensorflow/tools/graph_transforms:transform_graph
 
+# install redis
+RUN mkdir Downloads && \
+    cd Downloads && \
+    wget http://download.redis.io/redis-stable.tar.gz && \
+    tar xvzf redis-stable.tar.gz && \
+    cd redis-stable && \
+    make && \
+    make install
+
 # copy our project
 ADD ./requirements /requirements
 

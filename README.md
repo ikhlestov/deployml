@@ -25,6 +25,14 @@ For local setup you will also need:
 
 ## Docker SetUp
 
+### Pull containers
+
+TODO: add pull command
+
+### Build containers
+
+*You don't need these steps if you've pulled container successfully*
+
 - Dev container `docker build -f dockers/Dev . -t deployml_dev`
 - Dev container `docker build -f dockers/ProdLarge . -t deployml_prod_large`
 - Dev container `docker build -f dockers/ProdSmall . -t deployml_prod_small`
@@ -132,3 +140,64 @@ In any case you should know about:
 
 - [Open Neural Network Exchange](https://github.com/onnx/onnx)
 - [Deep Learning Model Convertors](https://github.com/ysh329/deep-learning-model-convertor)
+
+## Build back-end server
+
+- One-to-one server
+- Scaling with multiprocessing
+- Queues based
+- Serving with [tf-serving](https://www.tensorflow.org/serving/)
+
+## Profiling
+
+- Code:
+    
+    - [Line profiler](https://github.com/rkern/line_profiler)
+    - [CProfile](https://docs.python.org/3.6/library/profile.html)
+    - [PyCharm Profiler](https://www.jetbrains.com/help/pycharm/optimizing-your-code-using-profilers.html)
+
+- Tensorflow:
+
+    - [Chrome trace format based](https://towardsdatascience.com/howto-profile-tensorflow-1a49fb18073d)
+    - [Tf benchmark tool](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/tools/benchmark)
+    - [Tf benchmark class](https://www.tensorflow.org/api_docs/python/tf/test/Benchmark)
+
+- CPU/GPU:
+
+    - nvidia-smi
+    - [gpustat](https://github.com/wookayin/gpustat)
+    - [psutil](https://pypi.python.org/pypi/psutil)
+    - [nvidia profiler](https://developer.nvidia.com/nvidia-visual-profiler)
+
+- Lifetime benchmark - [airspeed velocity](https://github.com/airspeed-velocity/asv)
+
+## Automation
+
+- Continuous integration:
+
+    - Jenkins
+    - Travis
+    - TeamCity
+    - CircleCI
+
+- Clusters:
+
+    - Kubernetes
+    - Mesos
+    - Docker swarm
+
+- Configuration management:
+
+    - Terraform
+    - Ansible
+    - Chef
+    - Puppet
+    - SaltStack
+
+## Conclusion
+
+I'm grateful for cool ideas to Alexandr Onbysh, Aleksandr Obednikov and Kyryl Truskovskyi.
+
+Take a look at the [checklist](checklist.md).
+
+Thank you for reading!

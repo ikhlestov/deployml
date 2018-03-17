@@ -7,4 +7,4 @@ ADD . /project
 
 # install requirements
 RUN pip install -r requirements/prod.txt --no-cache-dir
-RUN echo "FINISHED"
+CMD ["/bin/bash"]
