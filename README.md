@@ -27,13 +27,13 @@ For local setup you will also need:
 
 ### Pull containers
 
-TODO: add pull command
+`docker pull ikhlestov/deployml_dev`
 
 ### Build containers
 
-*You don't need these steps if you've pulled container successfully*
+*You don't need first step if you've pulled container successfully*
 
-- Dev container `docker build -f dockers/Dev . -t deployml_dev`
+- Dev container `docker build -f dockers/Dev . -t ikhlestov/deployml_dev`
 - Dev container `docker build -f dockers/ProdLarge . -t deployml_prod_large`
 - Dev container `docker build -f dockers/ProdSmall . -t deployml_prod_small`
 - Compare their sizes `docker images | grep "deployml_dev\|deployml_prod_large\|deployml_prod_small"`
@@ -47,7 +47,7 @@ Develop with ubuntu, release with some smaller distros.
 ## Start with various frameworks
 
 - Check defined models in the `models` folder
-- Run docker container with mounted directory `docker run -v $(pwd):/deployml -it deployml_dev /bin/bash`
+- Run docker container with mounted directory `docker run -v $(pwd):/deployml -it ikhlestov/deployml_dev /bin/bash`
 - Run time measurements inside docker `cd /deployml && python3.6 benchmarks/compare_frameworks.py`
 - Run time measurements for every model locally `python3.6 benchmarks/compare_frameworks.py`(if you've passed local setup)
 
@@ -81,8 +81,8 @@ You may also take a look at other methods ([list of resources](resources.md)) li
 
 ## Try various restrictions
 
-- CPU restriction `docker run -v $(pwd):/deployml -it --cpus="1.0" deployml_dev /bin/bash`
-- Memory restriction `docker run -v $(pwd):/deployml -it --memory=1g deployml_dev /bin/bash`
+- CPU restriction `docker run -v $(pwd):/deployml -it --cpus="1.0" ikhlestov/deployml_dev /bin/bash`
+- Memory restriction `docker run -v $(pwd):/deployml -it --memory=1g ikhlestov/deployml_dev /bin/bash`
 - Try to run two models on two different CPUs
 - Try to run two models on two CPU simultaneously
 
@@ -145,7 +145,7 @@ In any case you should know about:
 
 - One-to-one server
 - Scaling with multiprocessing
-- Queues based
+- Queues based(Kafka, RabbitMQ, etc)
 - Serving with [tf-serving](https://www.tensorflow.org/serving/)
 
 ## Profiling
