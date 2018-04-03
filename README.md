@@ -1,76 +1,110 @@
-## Requirements
+<!-- MarkdownTOC -->
 
-In any case:
+- [Pre-Requirements](#pre-requirements)
+- [Environment SetUp](#environment-setup)
+- [Frameworks comparison](#frameworks-comparison)
+- [Tensorflow optimization methods](#tensorflow-optimization-methods)
+- [Training optimization approaches](#training-optimization-approaches)
+- [Simple servers](#simple-servers)
+- [Testing](#testing)
+    - [Load testing with various restrictions](#load-testing-with-various-restrictions)
+    - [Preprocessing and code testing](#preprocessing-and-code-testing)
+- [Profiling](#profiling)
+- [Routines automation](#routines-automation)
+- [Converting weights to the tensorflow](#converting-weights-to-the-tensorflow)
+- [Conclusion](#conclusion)
+
+<!-- /MarkdownTOC -->
+
+
+## Pre-Requirements
 
 - Docker. You may get it [here](https://docs.docker.com/install/)
 - Update docker memory limit if necessary
+- Fetch the docker image `docker pull ikhlestov/deployml_dev`
 - Git
-- Clone the repo `git clone git@github.com:ikhlestov/deployml.git`
+- Clone the workshop repository `git clone git@github.com:ikhlestov/deployml.git`
 
-For local setup you will also need:
 
-- Python >= 3.5
-- Bazel ([installation manual](https://docs.bazel.build/versions/master/install.html))
-- Tensorflow source code `git clone https://github.com/tensorflow/tensorflow.git`
+## Environment SetUp
 
-## Local SetUp
+- Check dockers containers defined at the `dockers` folder
+- You may try to build your own containers:
+    - `docker build -f dockers/Dev . -t ikhlestov/deployml_dev`
+    - `docker build -f dockers/Pro . -t ikhlestov/deployml_prod`
+- Compare their sizes `docker images | grep "deployml_dev\|deployml_prod"`
 
-1. Create virtual env
-    - `python3.6 -m venv .venv && source .venv/bin/activate`
-    - or `python3 -m venv .venv --without-pip && source .venv/bin/activate && wget https://bootstrap.pypa.io/get-pip.py -P /tmp/ && python /tmp/get-pip.py`
-2. Install required packages according to your OS:
+Notes:
 
-    - Ubuntu - `pip install -r requirements/local_ubuntu.txt`
-    - Mac - `pip install -r requirements/local_mac.txt`
+- Don't forget about [.dockerignore file](https://docs.docker.com/engine/reference/builder/#dockerignore-file).
+- Try to organize your docker files to use cache.
+- Optimize your docker containers
+- Try to release with some smaller distributions.
+- You may use [multistage builds](https://docs.docker.com/develop/develop-images/multistage-build/)
 
-## Docker SetUp
+## Frameworks comparison
 
-### Pull containers
+- Check defined models in the [models](models) folder
+- Run docker container with mounted directory:
+    
+    `docker run -v $(pwd):/deployml -it ikhlestov/deployml_dev /bin/bash`
 
-`docker pull ikhlestov/deployml_dev`
+- Run time measurements inside docker:
 
-### Build containers
+    `cd /deployml && python benchmarks/compare_frameworks.py`
 
-*You don't need first step if you've pulled container successfully*
+- Optional:
+    
+    - setup local environment `python3.6 -m venv .venv && source .venv/bin/activate && pip install -r requirements/local_mac.txt`
+    - Run time measurements for every model locally `python benchmarks/compare_frameworks.py`
 
-- Dev container `docker build -f dockers/Dev . -t ikhlestov/deployml_dev`
-- Dev container `docker build -f dockers/ProdLarge . -t deployml_prod_large`
-- Dev container `docker build -f dockers/ProdSmall . -t deployml_prod_small`
-- Compare their sizes `docker images | grep "deployml_dev\|deployml_prod_large\|deployml_prod_small"`
 
-<!---
-Don't forget about `.dockerignore` file.
-Try to organize your docker file to use cache as much as possible.
-Develop with ubuntu, release with some smaller distros.
--->
+## Tensorflow optimization methods
 
-## Start with various frameworks
+1. Save our tensorflow model.
 
-- Check defined models in the `models` folder
-- Run docker container with mounted directory `docker run -v $(pwd):/deployml -it ikhlestov/deployml_dev /bin/bash`
-- Run time measurements inside docker `cd /deployml && python3.6 benchmarks/compare_frameworks.py`
-- Run time measurements for every model locally `python3.6 benchmarks/compare_frameworks.py`(if you've passed local setup)
+    `python optimizers/save_tensorflow_model.py`
 
-## Optimize tensorflow
+2. Build frozen graph. More about it you may read [here](https://blog.metaflow.fr/tensorflow-how-to-freeze-a-model-and-serve-it-with-a-python-api-d4f3596b3adc)
 
-- Build frozen graph with `python3.6 optimizers/get_frozen_graph.py`. More about it you may read [here](https://blog.metaflow.fr/tensorflow-how-to-freeze-a-model-and-serve-it-with-a-python-api-d4f3596b3adc)
-- Compare frozen graph with usual one `python3.6 benchmarks/compare_frozen_graph.py`
-- Build optimized frozen graph `python3.6 optimizers/get_optimized_frozen_graph.py`
-- Check what speedup we've got `python3.6 benchmarks/compare_optimized_graph.py`
-- Get quantized graph `chmod +x optimizers/quantize_model.sh && ./optimizers/quantize_model.sh`
-- Is it faster? `python3.6 benchmarks/compare_quantized_graph.py`
+    `python optimizers/get_frozen_graph.py`
 
-For model quantization you need compiled tensorflow methods. They are already exist in docker, but in case you want to do it manually:
+3. Build optimized frozen graph
+    
+    `python optimizers/get_optimized_frozen_graph.py`
+
+4. Get quantized graph:
+    
+    3.1. With bazel ([tensorflow tutorial](https://www.tensorflow.org/performance/quantization))
+
+        ../tensorflow/bazel-bin/tensorflow/tools/graph_transforms/transform_graph \
+            --in_graph=`pwd`/saves/tensorflow/optimized_graph.pb \
+            --out_graph=`pwd`/saves/tensorflow/quantized_graph_bazel.pb  \
+            --inputs="input:0" \
+            --outputs="output:0" \
+            --transforms='quantize_weights'
+
+
+    3.2 With plain python ([link to script](https://github.com/tensorflow/tensorflow/blob/r1.6/tensorflow/tools/quantization/quantize_graph.py))
+    
+        python /tensorflow/tensorflow/tools/quantization/quantize_graph.py \
+            --input=saves/tensorflow/optimized_graph.pb \
+            --output=saves/tensorflow/quantized_graph_python.pb \
+            --output_node_names="output" \
+            --mode=weights
+
+    3.3 Note: [tf.contrib.quantize](https://www.tensorflow.org/api_docs/python/tf/contrib/quantize) provide only simulated quantization.
+
+5. Compare resulted graphs `python benchmarks/compare_tf_optimizations.py`
+
+In case you want to run this code locally you should:
 
 - install bazel ([manual](https://docs.bazel.build/versions/master/install.html))
 - clone tensorflow repo `git clone https://github.com/tensorflow/tensorflow.git && cd tensorflow`
 - build required script `bazel build tensorflow/tools/graph_transforms:transform_graph`
 
-<!---
-The main usability that you may ship your model as one binary file.
-You should freeze/optimize/serve model with the same tensorflow version.
-Quantization may reduce model size, but also decrease model speed.
--->
+
+## Training optimization approaches
 
 You may also take a look at other methods ([list of resources](resources.md)) like:
 
@@ -79,7 +113,18 @@ You may also take a look at other methods ([list of resources](resources.md)) li
 - XNOR nets
 - Knowledge distillation
 
-## Try various restrictions
+
+## Simple servers
+
+- One-to-one server
+- Scaling with multiprocessing
+- Queues based(Kafka, RabbitMQ, etc)
+- Serving with [tf-serving](https://www.tensorflow.org/serving/)
+
+
+## Testing
+
+### Load testing with various restrictions
 
 - CPU restriction `docker run -v $(pwd):/deployml -it --cpus="1.0" ikhlestov/deployml_dev /bin/bash`
 - Memory restriction `docker run -v $(pwd):/deployml -it --memory=1g ikhlestov/deployml_dev /bin/bash`
@@ -90,13 +135,12 @@ You may also take a look at other methods ([list of resources](resources.md)) li
 Where data preprocessing should be done? CPU or GPU or even another host?
 -->
 
-
-## Preprocessing and testing
+### Preprocessing and code testing
 
 Q: Where is preprocessing should be done - on CPU or GPU?
 
 - enter to the preprocessing directory `cd preprocessing`
-- run various resizers benchmarks `python3.6 benchmark.py`
+- run various resizers benchmarks `python benchmark.py`
     
     - Note: opencv may be installed from PyPi for python3
 
@@ -124,29 +168,6 @@ You my run tests:
 - At the various docker containers
 - Under the [tox](https://tox.readthedocs.io/en/latest/)
 
-## Converting to the tensorflow
-
-- Converting from keras to tensorflow:
-
-    - Get keras saved model `python3.6 converters/save_keras_model.py`
-    - Convert keras model to the tensorflow save format `python3.6 converters/convert_keras_to_tf.py`
-
-- Converting from PyTorch to tensorflow:
-
-    - Trough keras - [converter](https://github.com/nerox8664/pytorch2keras)
-    - Manually
-
-In any case you should know about:
-
-- [Open Neural Network Exchange](https://github.com/onnx/onnx)
-- [Deep Learning Model Convertors](https://github.com/ysh329/deep-learning-model-convertor)
-
-## Build back-end server
-
-- One-to-one server
-- Scaling with multiprocessing
-- Queues based(Kafka, RabbitMQ, etc)
-- Serving with [tf-serving](https://www.tensorflow.org/serving/)
 
 ## Profiling
 
@@ -171,7 +192,8 @@ In any case you should know about:
 
 - Lifetime benchmark - [airspeed velocity](https://github.com/airspeed-velocity/asv)
 
-## Automation
+
+## Routines automation
 
 - Continuous integration:
 
@@ -194,9 +216,28 @@ In any case you should know about:
     - Puppet
     - SaltStack
 
+
+## Converting weights to the tensorflow
+
+- Converting from keras to tensorflow:
+
+    - Get keras saved model `python converters/save_keras_model.py`
+    - Convert keras model to the tensorflow save format `python converters/convert_keras_to_tf.py`
+
+- Converting from PyTorch to tensorflow:
+
+    - Trough keras - [converter](https://github.com/nerox8664/pytorch2keras)
+    - Manually
+
+In any case you should know about:
+
+- [Open Neural Network Exchange](https://github.com/onnx/onnx)
+- [Deep Learning Model Convertors](https://github.com/ysh329/deep-learning-model-convertor)
+
+
 ## Conclusion
 
-I'm grateful for cool ideas to Alexandr Onbysh, Aleksandr Obednikov and Kyryl Truskovskyi.
+I'm grateful for the cool ideas to Alexandr Onbysh, Aleksandr Obednikov, Kyryl Truskovskyi and to the Ring Urkaine in overall.
 
 Take a look at the [checklist](checklist.md).
 

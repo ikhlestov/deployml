@@ -3,6 +3,7 @@
 *.sublime-workspace
 TODO
 saves*
+tensorflow_source/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

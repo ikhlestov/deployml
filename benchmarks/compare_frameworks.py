@@ -13,7 +13,6 @@ from models.tensorflow_model import Model as TFModel
 from utils import measure_model
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-np.random.seed(42)
 
 
 @click.command()

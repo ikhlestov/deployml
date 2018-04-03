@@ -5,7 +5,8 @@ from cv2 import resize as resize_cv2
 
 def resize(image, height, width, use_cv2):
     if use_cv2:
-        resized = resize_cv2(image, (height, width))
+        # resized = resize_cv2(image, (height, width))
+        resized = resize_cv2(image, (width, height))
     else:
         resized = resize_skimage(image, (height, width), mode='constant')
     return resized

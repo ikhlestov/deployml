@@ -5,10 +5,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-np.random.seed(42)
-torch.manual_seed(42)
-
-
 class Model(nn.Module):
     def __init__(self):
         super().__init__()

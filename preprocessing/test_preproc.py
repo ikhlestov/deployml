@@ -24,18 +24,18 @@ def random_image(input_size):
     return np.random.rand(*input_size, 3)
 
 
-def test_skimage_resize(random_image, out_width, out_height):
-    result = resize(random_image, height=out_height, width=out_width, use_cv2=False)
-    res_height, res_width, _ = result.shape
-    assert res_height == out_height
-    assert res_width == out_width
+# def test_skimage_resize(random_image, out_width, out_height):
+#     result = resize(random_image, height=out_height, width=out_width, use_cv2=False)
+#     res_height, res_width, _ = result.shape
+#     assert res_height == out_height
+#     assert res_width == out_width
 
 
-def test_cv2_resize(random_image, out_width, out_height):
-    result = resize(random_image, height=out_height, width=out_width, use_cv2=True)
-    res_height, res_width, _ = result.shape
-    assert res_height == out_height
-    assert res_width == out_width
+# def test_cv2_resize(random_image, out_width, out_height):
+#     result = resize(random_image, height=out_height, width=out_width, use_cv2=True)
+#     res_height, res_width, _ = result.shape
+#     assert res_height == out_height
+#     assert res_width == out_width
 
 
 @pytest.mark.parametrize('use_cv2', [False, True])

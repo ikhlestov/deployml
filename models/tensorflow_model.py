@@ -2,9 +2,6 @@ import numpy as np
 import tensorflow as tf
 
 
-np.random.seed(42)
-
-
 class Model:
     input_node_name = 'input'
     output_node_name = 'output'

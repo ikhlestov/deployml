@@ -51,7 +51,7 @@ def main(batch_size, saves_dir=TENSORFLOW_SAVES_DIR):
 
     optimized_graph = os.path.join(saves_dir, 'optimized_graph.pb')
     print("Optimized graph size:", os.path.getsize(optimized_graph))
-    quantized_graph = os.path.join(saves_dir, 'quantized_graph.pb')
+    quantized_graph = os.path.join(saves_dir, 'quantized_graph2.pb')
     print("Quantized graph size:", os.path.getsize(quantized_graph))
 
     for batch_size in batches:

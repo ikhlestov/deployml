@@ -2,3 +2,6 @@
 .git
 *.sublime-project
 *.sublime-workspace
+__pycache__
+tensorflow_source
+saves

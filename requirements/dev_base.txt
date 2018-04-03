@@ -3,7 +3,7 @@ ipython
 jupyter
 ipdb
 scikit-image
-tensorflow==1.5
+tensorflow==1.6
 keras
 click
 opencv-python

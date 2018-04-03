@@ -13,12 +13,12 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 def main(saves_dir=TENSORFLOW_SAVES_DIR):
-    os.makedirs(saves_dir, exist_ok=True)
-    # save our initial model at first
+    # load previously saved model
     model = Model()
     saver = tf.train.Saver()
-    save_path = os.path.join(os.path.abspath(saves_dir), 'usual_model')
-    saver.save(model.sess, save_path)
+
+    with tf.Session() as sess:
+        saver.restore(sess, os.path.join(saves_dir, 'usual_model'))
 
     # get constant graph
     constant_graph = tf.graph_util.convert_variables_to_constants(

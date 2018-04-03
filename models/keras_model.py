@@ -4,9 +4,6 @@ from keras.layers import Dense, Activation, Conv2D, BatchNormalization, \
     AveragePooling2D, Flatten
 
 
-np.random.seed(42)
-
-
 class Model:
     def __init__(self):
         self.model = Sequential([
