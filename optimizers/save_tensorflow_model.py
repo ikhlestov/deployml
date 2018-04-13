@@ -12,6 +12,7 @@ def main(saves_dir=TENSORFLOW_SAVES_DIR):
     saver = tf.train.Saver()
     save_path = os.path.join(saves_dir, 'usual_model')
     saver.save(model.sess, save_path)
+    tf.train.write_graph(model.sess.graph_def, saves_dir, 'usual_model.pbtxt')
 
 
 if __name__ == '__main__':

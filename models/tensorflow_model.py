@@ -13,6 +13,11 @@ class Model:
             shape=(None, 224, 224, 3),
             name=self.input_node_name
         )
+        self.labels = tf.placeholder(
+            tf.int32,
+            shape=(None, 100),
+            name='labels'
+        )
         self.kernel_count = 0
         self._build_net()
         self._initialize_session()
@@ -40,42 +45,51 @@ class Model:
         x = self.input
 
         # first block
-        x = tf.nn.conv2d(x, filter=self.__kernel(3, 6), strides=strides, padding=padding)
-        x = tf.nn.relu(tf.layers.batch_normalization(x))
-        x = tf.nn.conv2d(x, filter=self.__kernel(6, 9), strides=strides, padding=padding)
-        x = tf.nn.relu(tf.layers.batch_normalization(x))
-        x = tf.nn.pool(x, (2, 2), 'AVG', padding=padding, strides=(2, 2))
+        with tf.name_scope("first_block"):
+            x = tf.nn.conv2d(x, filter=self.__kernel(3, 6), strides=strides, padding=padding)
+            x = tf.nn.relu(tf.layers.batch_normalization(x))
+            x = tf.nn.conv2d(x, filter=self.__kernel(6, 9), strides=strides, padding=padding)
+            x = tf.nn.relu(tf.layers.batch_normalization(x))
+            x = tf.nn.pool(x, (2, 2), 'AVG', padding=padding, strides=(2, 2))
 
         # second block
-        x = tf.nn.conv2d(x, filter=self.__kernel(9, 12), strides=strides, padding=padding)
-        x = tf.nn.relu(tf.layers.batch_normalization(x))
-        x = tf.nn.conv2d(x, filter=self.__kernel(12, 16), strides=strides, padding=padding)
-        x = tf.nn.relu(tf.layers.batch_normalization(x))
-        x = tf.nn.pool(x, (2, 2), 'AVG', padding=padding, strides=(2, 2))
+        with tf.name_scope("second_block"):
+            x = tf.nn.conv2d(x, filter=self.__kernel(9, 12), strides=strides, padding=padding)
+            x = tf.nn.relu(tf.layers.batch_normalization(x))
+            x = tf.nn.conv2d(x, filter=self.__kernel(12, 16), strides=strides, padding=padding)
+            x = tf.nn.relu(tf.layers.batch_normalization(x))
+            x = tf.nn.pool(x, (2, 2), 'AVG', padding=padding, strides=(2, 2))
 
         # third block
-        x = tf.nn.conv2d(x, filter=self.__kernel(16, 32), strides=strides, padding=padding)
-        x = tf.nn.relu(tf.layers.batch_normalization(x))
-        x = tf.nn.conv2d(x, filter=self.__kernel(32, 64), strides=strides, padding=padding)
-        x = tf.nn.relu(tf.layers.batch_normalization(x))
-        x = tf.nn.pool(x, (2, 2), 'AVG', padding=padding, strides=(2, 2))
+        with tf.name_scope("third_block"):
+            x = tf.nn.conv2d(x, filter=self.__kernel(16, 32), strides=strides, padding=padding)
+            x = tf.nn.relu(tf.layers.batch_normalization(x))
+            x = tf.nn.conv2d(x, filter=self.__kernel(32, 64), strides=strides, padding=padding)
+            x = tf.nn.relu(tf.layers.batch_normalization(x))
+            x = tf.nn.pool(x, (2, 2), 'AVG', padding=padding, strides=(2, 2))
 
         # forth block
-        x = tf.nn.conv2d(x, filter=self.__kernel(64, 128), strides=strides, padding=padding)
-        x = tf.nn.relu(tf.layers.batch_normalization(x))
-        x = tf.nn.conv2d(x, filter=self.__kernel(128, 256), strides=strides, padding=padding)
-        # x = self.large_block(x, strides)
-        x = tf.nn.relu(tf.layers.batch_normalization(x))
+        with tf.name_scope("forth_block"):
+            x = tf.nn.conv2d(x, filter=self.__kernel(64, 128), strides=strides, padding=padding)
+            x = tf.nn.relu(tf.layers.batch_normalization(x))
+            x = tf.nn.conv2d(x, filter=self.__kernel(128, 256), strides=strides, padding=padding)
+            # x = self.large_block(x, strides)
+            x = tf.nn.relu(tf.layers.batch_normalization(x))
 
         # transition to classes
-        x = tf.nn.pool(x, (20, 20), 'AVG', padding=padding, strides=(1, 1))
-        x = tf.layers.flatten(x)
-        x = tf.layers.dense(x, 512)
-        x = tf.layers.batch_normalization(x)
-        x = tf.nn.relu(x)
-        x = tf.layers.dense(x, 100)
-        x = tf.nn.sigmoid(x, name=self.output_node_name)
-        self.output = x
+        with tf.name_scope("transition_to_classes"):
+            x = tf.nn.pool(x, (20, 20), 'AVG', padding=padding, strides=(1, 1))
+            x = tf.layers.flatten(x)
+            x = tf.layers.dense(x, 512)
+            x = tf.layers.batch_normalization(x)
+            x = tf.nn.relu(x)
+            x = tf.layers.dense(x, 100)
+            x = tf.nn.sigmoid(x, name=self.output_node_name)
+            self.output = x
+
+        with tf.name_scope("training"):
+            loss = tf.losses.softmax_cross_entropy(onehot_labels=self.labels, logits=x)
+            train_step = tf.train.AdamOptimizer(0.01).minimize(loss)
 
     def predict(self, inputs):
         feed_dict = {self.input: inputs}

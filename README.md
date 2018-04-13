@@ -7,6 +7,9 @@
 - [Frameworks comparison](#frameworks-comparison)
 - [Tensorflow optimization methods](#tensorflow-optimization-methods)
 - [Training optimization approaches](#training-optimization-approaches)
+    - [Pruning](#pruning)
+    - [XNOR nets](#xnor-nets)
+    - [Knowledge distillation](#knowledge-distillation)
 - [Simple servers](#simple-servers)
 - [Testing](#testing)
     - [Load testing with various restrictions](#load-testing-with-various-restrictions)
@@ -49,7 +52,7 @@ Notes:
 - Check defined models in the [models](models) folder
 - Run docker container with mounted directory:
     
-    `docker run -v $(pwd):/deployml -it ikhlestov/deployml_dev /bin/bash`
+    `docker run -v $(pwd):/deployml -p 6006:6006 -it ikhlestov/deployml_dev /bin/bash`
 
 - Install our library
 
@@ -71,20 +74,25 @@ Notes:
 
     `python optimizers/save_tensorflow_model.py`
 
-2. Build frozen graph. More about it you may read [here](https://blog.metaflow.fr/tensorflow-how-to-freeze-a-model-and-serve-it-with-a-python-api-d4f3596b3adc)
+    1.1 Import saved model to tensorboard
 
-<!-- TODO: add image -->
+    `python misc/import_pb_to_tensorboard.py --model_dir saves/tensorflow/usual_model.pbtxt --log_dir saves/tensorboard/usual_model --graph_type PbTxt`
+
+    1.2 Run tensorboard in the background
+
+    `tensorboard --logdir saves/tensorboard --host=0.0.0.0 &`
+
+2. Build frozen graph. More about it you may read [here](https://blog.metaflow.fr/tensorflow-how-to-freeze-a-model-and-serve-it-with-a-python-api-d4f3596b3adc)
 
     `python optimizers/get_frozen_graph.py`
 
+    `python misc/import_pb_to_tensorboard.py --model_dir saves/tensorflow/constant_graph.pb --log_dir saves/tensorboard/constant_graph`
 
 3. Build optimized frozen graph
 
-<!-- TODO: add image -->
-    
     `python optimizers/get_optimized_frozen_graph.py`
 
-<!-- TODO: add image -->
+    `python misc/import_pb_to_tensorboard.py --model_dir saves/tensorflow/optimized_graph.pb --log_dir saves/tensorboard/optimized_graph`
 
 4. Get quantized graph:
 
@@ -109,6 +117,16 @@ Notes:
 
     3.3 Note: [tf.contrib.quantize](https://www.tensorflow.org/api_docs/python/tf/contrib/quantize) provide only simulated quantization.
 
+    3.4 Import quantized models to the tensorboard
+
+        python misc/import_pb_to_tensorboard.py \
+            --model_dir saves/tensorflow/quantized_graph_bazel.pb \
+            --log_dir saves/tensorboard/quantized_graph_bazel
+        
+        python misc/import_pb_to_tensorboard.py \
+            --model_dir saves/tensorflow/quantized_graph_python.pb \
+            --log_dir saves/tensorboard/quantized_graph_python
+
 5. Compare resulted graphs sizes `ls -l saves/tensorflow/`
 
 6. Compare resulted graphs performance `python benchmarks/compare_tf_optimizations.py`
@@ -124,15 +142,15 @@ In case you want to run this code locally you should:
 
 You may also take a look at other methods ([list of resources](optimization_approaches.md)) like:
 
-Pruning
+### Pruning
 
 ![Pruning](/images/02_pruning.jpg)
 
-XNOR nets
+### XNOR nets
 
 ![XNOR nets](/images/03_xnor_net.png)
 
-Knowledge distillation
+### Knowledge distillation
 
 ![Knowledge distillation](/images/04_distillation.png)
 
