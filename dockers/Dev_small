@@ -32,37 +32,8 @@ RUN python3.6 -m pip install pip --upgrade && \
     python3.6 -m pip install wheel && \
     ln -s /usr/bin/python3.6 /usr/bin/python
 
-# install bazel
-RUN apt-get update && \
-    apt-get install -y \
-        pkg-config \
-        zip \
-        g++ \
-        zlib1g-dev \
-        unzip \
-        wget && \
-    rm -rf /var/lib/apt/lists/* && \
-    wget https://github.com/bazelbuild/bazel/releases/download/0.5.4/bazel-0.5.4-installer-linux-x86_64.sh && \
-    chmod +x bazel-0.5.4-installer-linux-x86_64.sh && \
-    ./bazel-0.5.4-installer-linux-x86_64.sh && \
-    rm bazel-0.5.4-installer-linux-x86_64.sh
-
 # clone tensorflow
-RUN git clone https://github.com/tensorflow/tensorflow.git -b v1.6.0 && \
-    cd tensorflow
-
-# build tensorflow parts
-RUN cd tensorflow && \
-    bazel build tensorflow/tools/graph_transforms:transform_graph
-
-# # install redis
-# RUN mkdir Downloads && \
-#     cd Downloads && \
-#     wget http://download.redis.io/redis-stable.tar.gz && \
-#     tar xvzf redis-stable.tar.gz && \
-#     cd redis-stable && \
-#     make && \
-#     make install
+RUN git clone https://github.com/tensorflow/tensorflow.git -b v1.6.0
 
 # copy our project
 ADD ./ /deployml

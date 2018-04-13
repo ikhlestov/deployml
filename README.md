@@ -4,6 +4,10 @@
 
 - [Pre-Requirements](#pre-requirements)
 - [Environment SetUp](#environment-setup)
+    - [Case 1](#case-1)
+    - [Case 1.1](#case-11)
+    - [Case 2](#case-2)
+    - [Case 3](#case-3)
 - [Frameworks comparison](#frameworks-comparison)
 - [Tensorflow optimization methods](#tensorflow-optimization-methods)
 - [Training optimization approaches](#training-optimization-approaches)
@@ -12,7 +16,6 @@
     - [Knowledge distillation](#knowledge-distillation)
 - [Simple servers](#simple-servers)
 - [Testing](#testing)
-    - [Load testing with various restrictions](#load-testing-with-various-restrictions)
     - [Preprocessing and code testing](#preprocessing-and-code-testing)
 - [Profiling](#profiling)
 - [Routines automation](#routines-automation)
@@ -26,18 +29,61 @@
 
 - Docker. You may get it [here](https://docs.docker.com/install/)
 - Update docker memory limit if necessary
-- Fetch the docker image `docker pull ikhlestov/deployml_dev`
-- Git
-- Clone the workshop repository `git clone git@github.com:ikhlestov/deployml.git`
+<!-- - Fetch the docker image `docker pull ikhlestov/deployml_dev` -->
+- Git, Python>=3.5
 
 
 ## Environment SetUp
 
-- Check dockers containers defined at the `dockers` folder
-- You may try to build your own containers:
-    - `docker build -f dockers/Dev . -t ikhlestov/deployml_dev`
+### Case 1
+
+- Clone the workshop repository 
+
+    `git clone git@github.com:ikhlestov/deployml.git && cd deployml`
+
+- Create virtualenv
+
+    `python3.6 -m venv .venv && source .venv/bin/activate`
+
+- Install corresponding requirements 
+
+    `pip install -r requirements/dev_mac.txt`
+
+    or
+
+    `pip install -r requirements/dev_ubuntu_cpu.txt`
+
+**Note**: requirements are based on python3.6. If you have another python version you should change link to the pytorch wheel at the requirements file which you may get [here](http://pytorch.org/)
+
+### Case 1.1
+
+Additionally download tensorflow source code nearby:
+
+`git clone https://github.com/tensorflow/tensorflow.git -b v1.6.0`
+
+### Case 2
+
+pull small docker container:
+
+`docker pull ikhlestov/deployml_dev_small`
+
+or
+
+pull large docker container(in case of really good Internet connection):
+
+`docker pull ikhlestov/deployml_dev`
+
+### Case 3
+
+Build your own docker container:
+
+- Clone the workshop repository `git clone git@github.com:ikhlestov/deployml.git && cd deployml`
+- Check dockers containers defined at the *dockers* folder
+- Run build commands:
+    - `docker build -f dockers/Dev . -t ikhlestov/deployml_dev` (for the workshop you should build only this image)
+    - `docker build -f dockers/Dev_small . -t ikhlestov/deployml_dev_small`
     - `docker build -f dockers/Pro . -t ikhlestov/deployml_prod`
-- Compare their sizes `docker images | grep "deployml_dev\|deployml_prod"`
+- Compare their sizes `docker images | grep "deployml_dev\|deployml_dev_small\|deployml_prod"`
 
 Notes:
 
@@ -52,21 +98,11 @@ Notes:
 - Check defined models in the [models](models) folder
 - Run docker container with mounted directory:
     
-    `docker run -v $(pwd):/deployml -p 6006:6006 -it ikhlestov/deployml_dev /bin/bash`
-
-- Install our library
-
-    `cd /deployml && pip install -e .`
+    `docker run -v $(pwd):/deployml -p 6060:6060 -it ikhlestov/deployml_dev /bin/bash`
 
 - Run time measurements inside docker:
 
     `python benchmarks/compare_frameworks.py`
-
-- Optional:
-    
-    - setup local environment `python3.6 -m venv .venv && source .venv/bin/activate && pip install -r requirements/dev_mac.txt`
-    - Run time measurements for every model locally `python benchmarks/compare_frameworks.py`
-
 
 ## Tensorflow optimization methods
 
@@ -80,13 +116,14 @@ Notes:
 
     1.2 Run tensorboard in the background
 
-    `tensorboard --logdir saves/tensorboard --host=0.0.0.0 &`
+    `tensorboard --logdir saves/tensorboard --port 6060 --host=0.0.0.0 &`
 
 2. Build frozen graph. More about it you may read [here](https://blog.metaflow.fr/tensorflow-how-to-freeze-a-model-and-serve-it-with-a-python-api-d4f3596b3adc)
 
     `python optimizers/get_frozen_graph.py`
 
-    `python misc/import_pb_to_tensorboard.py --model_dir saves/tensorflow/constant_graph.pb --log_dir saves/tensorboard/constant_graph`
+    `python misc/import_pb_to_tensorboard.py  --model_dir saves/tensorflow/constant_graph.pb --log_dir saves/tensorboard/constant_graph
+    `
 
 3. Build optimized frozen graph
 
@@ -96,8 +133,15 @@ Notes:
 
 4. Get quantized graph:
 
+    3.1 With plain python ([link to script](https://github.com/tensorflow/tensorflow/blob/r1.6/tensorflow/tools/quantization/quantize_graph.py))
     
-    3.1. With bazel ([tensorflow tutorial](https://www.tensorflow.org/performance/quantization))
+        python /tensorflow/tensorflow/tools/quantization/quantize_graph.py \
+            --input=saves/tensorflow/optimized_graph.pb \
+            --output=saves/tensorflow/quantized_graph_python.pb \
+            --output_node_names="output" \
+            --mode=weights
+
+    3.2. With bazel ([tensorflow tutorial](https://www.tensorflow.org/performance/quantization))
 
         ../tensorflow/bazel-bin/tensorflow/tools/graph_transforms/transform_graph \
             --in_graph=`pwd`/saves/tensorflow/optimized_graph.pb \
@@ -105,15 +149,6 @@ Notes:
             --inputs="input:0" \
             --outputs="output:0" \
             --transforms='quantize_weights'
-
-
-    3.2 With plain python ([link to script](https://github.com/tensorflow/tensorflow/blob/r1.6/tensorflow/tools/quantization/quantize_graph.py))
-    
-        python /tensorflow/tensorflow/tools/quantization/quantize_graph.py \
-            --input=saves/tensorflow/optimized_graph.pb \
-            --output=saves/tensorflow/quantized_graph_python.pb \
-            --output_node_names="output" \
-            --mode=weights
 
     3.3 Note: [tf.contrib.quantize](https://www.tensorflow.org/api_docs/python/tf/contrib/quantize) provide only simulated quantization.
 
@@ -127,9 +162,31 @@ Notes:
             --model_dir saves/tensorflow/quantized_graph_python.pb \
             --log_dir saves/tensorboard/quantized_graph_python
 
-5. Compare resulted graphs sizes `ls -l saves/tensorflow/`
+5. Compare resulted graphs
 
-6. Compare resulted graphs performance `python benchmarks/compare_tf_optimizations.py`
+    5.1 sizes `ls -l saves/tensorflow/`
+
+    5.2 architecture at the [tensorboard](http://127.0.0.1:6006)
+
+    5.3 Compare resulted graphs performance `python benchmarks/compare_tf_optimizations.py`
+
+
+6. Try various restrictions
+
+    6.1 CPU restriction
+
+        docker run -v $(pwd):/deployml -it --cpus="1.0" ikhlestov/deployml_dev /bin/bash
+
+    6.2 Memory restriction
+
+        docker run -v $(pwd):/deployml -it --memory=1g ikhlestov/deployml_dev /bin/bash
+
+    6.3 Use GPUs
+
+        docker run --runtime=nvidia -v $(pwd):/deployml -it ikhlestov/deployml_dev /bin/bash
+
+    6.3 Try to run two models on two different CPUs
+    6.4 Try to run two models on two CPU simultaneously
 
 In case you want to run this code locally you should:
 
@@ -155,7 +212,6 @@ You may also take a look at other methods ([list of resources](optimization_appr
 ![Knowledge distillation](/images/04_distillation.png)
 
 
-
 ## Simple servers
 
 - One-to-one server
@@ -165,14 +221,6 @@ You may also take a look at other methods ([list of resources](optimization_appr
 
 
 ## Testing
-
-### Load testing with various restrictions
-
-- CPU restriction `docker run -v $(pwd):/deployml -it --cpus="1.0" ikhlestov/deployml_dev /bin/bash`
-- Memory restriction `docker run -v $(pwd):/deployml -it --memory=1g ikhlestov/deployml_dev /bin/bash`
-- Try to run two models on two different CPUs
-- Try to run two models on two CPU simultaneously
-
 
 ### Preprocessing and code testing
 

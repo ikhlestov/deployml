@@ -15,4 +15,3 @@ line_profiler
 psutil
 gpustat
 asv
-tensorflow==1.6

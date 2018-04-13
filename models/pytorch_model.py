@@ -5,6 +5,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+GPU_AVAILABLE = torch.cuda.is_available()
+
+
 class Model(nn.Module):
     def __init__(self):
         super().__init__()
@@ -72,8 +75,13 @@ class Model(nn.Module):
         x = torch.from_numpy(x)
         x = x.float()
         x = Variable(x)
+        if GPU_AVAILABLE:
+            x = x.cuda()
         x = self.forward(x)
         x = F.sigmoid(x)
+        if GPU_AVAILABLE:
+            x = x.cpu()
+        x = x.data.numpy()
         return x
 
 

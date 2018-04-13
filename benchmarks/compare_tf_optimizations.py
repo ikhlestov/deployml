@@ -11,9 +11,11 @@ from models.tensorflow_model import Model
 
 
 class BinaryModel:
-    def __init__(self, saves_dir, model_name, input_node_name, output_node_name):
+    def __init__(self, saves_dir, model_file, input_node_name, output_node_name):
         # read binary file
-        binary_path = os.path.join(saves_dir, 'constant_graph.pb')
+        binary_path = os.path.join(saves_dir, model_file)
+        if not os.path.exists(binary_path):
+            raise FileNotFoundError
         with tf.gfile.Open(binary_path, "rb") as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
@@ -64,7 +66,7 @@ def main(batch_size, saves_dir=TENSORFLOW_SAVES_DIR):
         tf.reset_default_graph()
         frozen_model = BinaryModel(
             saves_dir=saves_dir,
-            model_name='constant_graph.pb',
+            model_file='constant_graph.pb',
             input_node_name=Model.input_node_name,
             output_node_name=Model.output_node_name
         )
@@ -75,34 +77,42 @@ def main(batch_size, saves_dir=TENSORFLOW_SAVES_DIR):
         tf.reset_default_graph()
         optimized_frozen_model = BinaryModel(
             saves_dir=saves_dir,
-            model_name='optimized_graph.pb',
+            model_file='optimized_graph.pb',
             input_node_name=Model.input_node_name,
             output_node_name=Model.output_node_name
         )
         measure_model(optimized_frozen_model, "Optimized frozen model", batch)
         optimized_frozen_model.sess.close()
 
-        # model quantized with bazel
-        tf.reset_default_graph()
-        optimized_frozen_model = BinaryModel(
-            saves_dir=saves_dir,
-            model_name='quantized_graph_bazel.pb',
-            input_node_name=Model.input_node_name,
-            output_node_name=Model.output_node_name
-        )
-        measure_model(optimized_frozen_model, "Quantized with bazel", batch)
-        optimized_frozen_model.sess.close()
-
         # model quantized with python
-        tf.reset_default_graph()
-        optimized_frozen_model = BinaryModel(
-            saves_dir=saves_dir,
-            model_name='quantized_graph_python.pb',
-            input_node_name=Model.input_node_name,
-            output_node_name=Model.output_node_name
-        )
-        measure_model(optimized_frozen_model, "Quantized with python", batch)
-        optimized_frozen_model.sess.close()
+        model_name = "Quantized with python"
+        try:
+            tf.reset_default_graph()
+            optimized_frozen_model = BinaryModel(
+                saves_dir=saves_dir,
+                model_file='quantized_graph_python.pb',
+                input_node_name=Model.input_node_name,
+                output_node_name=Model.output_node_name
+            )
+            measure_model(optimized_frozen_model, model_name, batch)
+            optimized_frozen_model.sess.close()
+        except FileNotFoundError:
+            print("skipped                                   // %s" % model_name)
+
+        # model quantized with bazel
+        model_name = "Quantized with bazel"
+        try:
+            tf.reset_default_graph()
+            optimized_frozen_model = BinaryModel(
+                saves_dir=saves_dir,
+                model_file='quantized_graph_bazel.pb',
+                input_node_name=Model.input_node_name,
+                output_node_name=Model.output_node_name
+            )
+            measure_model(optimized_frozen_model, model_name, batch)
+            optimized_frozen_model.sess.close()
+        except FileNotFoundError:
+            print("skipped                                   // %s" % model_name)
 
 
 if __name__ == '__main__':

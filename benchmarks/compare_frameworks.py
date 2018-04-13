@@ -1,5 +1,6 @@
 import click
 import numpy as np
+import torch
 
 from models.pytorch_model import Model as PTModel
 from models.keras_model import Model as KerasModel
@@ -16,6 +17,8 @@ def main(batch_size):
         batches = [batch_size]
 
     pt_model = PTModel()
+    if torch.cuda.is_available():
+        pt_model.cuda()
     keras_model = KerasModel()
     tf_model = TFModel()
     for batch_size in batches:

@@ -1,7 +1,10 @@
 .venv
+.venv_cpu
+.venv_gpu
 .git
 *.sublime-project
 *.sublime-workspace
 __pycache__
 tensorflow_source
 saves
+tensorflow

@@ -4,6 +4,7 @@
 TODO
 saves*
 tensorflow_source/
+tensorflow/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -91,6 +92,8 @@ celerybeat-schedule
 # Environments
 .env
 .venv
+.venv_cpu
+.venv_gpu
 env/
 venv/
 ENV/
