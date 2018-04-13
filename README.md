@@ -84,10 +84,10 @@ Notes:
     
     `python optimizers/get_optimized_frozen_graph.py`
 
+<!-- TODO: add image -->
 
 4. Get quantized graph:
 
-<!-- TODO: add image -->
     
     3.1. With bazel ([tensorflow tutorial](https://www.tensorflow.org/performance/quantization))
 
