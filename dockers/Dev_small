@@ -14,11 +14,11 @@ ENV LC_ALL en_US.UTF-8
 
 # install python3.6
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
         software-properties-common && \
     add-apt-repository ppa:jonathonf/python-3.6 && \
     apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
         build-essential \
         python3.6 \
         python3.6-dev \
@@ -40,7 +40,7 @@ ADD ./ /deployml
 WORKDIR /deployml
 
 # install requirements
-RUN pip install -r requirements/dev_ubuntu_cpu.txt --no-cache
+RUN pip install setuptools && pip install -r requirements/dev_ubuntu_cpu.txt --no-cache
 
 # disable some warnings
 ENV PYTHONWARNINGS "ignore"

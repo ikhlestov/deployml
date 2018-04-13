@@ -82,7 +82,7 @@ Build your own docker container:
 - Run build commands:
     - `docker build -f dockers/Dev . -t ikhlestov/deployml_dev` (for the workshop you should build only this image)
     - `docker build -f dockers/Dev_small . -t ikhlestov/deployml_dev_small`
-    - `docker build -f dockers/Pro . -t ikhlestov/deployml_prod`
+    - `docker build -f dockers/Prod . -t ikhlestov/deployml_prod`
 - Compare their sizes `docker images | grep "deployml_dev\|deployml_dev_small\|deployml_prod"`
 
 Notes:
@@ -98,7 +98,7 @@ Notes:
 - Check defined models in the [models](models) folder
 - Run docker container with mounted directory:
     
-    `docker run -v $(pwd):/deployml -p 6060:6060 -it ikhlestov/deployml_dev /bin/bash`
+    `docker run -v $(pwd):/deployml -p 6060:6060 -p 8080:8080 -it ikhlestov/deployml_dev /bin/bash`
 
 - Run time measurements inside docker:
 
@@ -188,11 +188,13 @@ Notes:
     6.3 Try to run two models on two different CPUs
     6.4 Try to run two models on two CPU simultaneously
 
-In case you want to run this code locally you should:
+
+<!-- In case you want to run this code locally you should:
 
 - install bazel ([manual](https://docs.bazel.build/versions/master/install.html))
 - clone tensorflow repo `git clone https://github.com/tensorflow/tensorflow.git && cd tensorflow`
 - build required script `bazel build tensorflow/tools/graph_transforms:transform_graph`
+ -->
 
 
 ## Training optimization approaches
@@ -214,10 +216,32 @@ You may also take a look at other methods ([list of resources](optimization_appr
 
 ## Simple servers
 
-- One-to-one server
-- Scaling with multiprocessing
-- Queues based(Kafka, RabbitMQ, etc)
-- Serving with [tf-serving](https://www.tensorflow.org/serving/)
+**One-to-one server([servers/simple_server.py](servers/simple_server.py))**
+
+![One-to-one server](/images/05_simplest_BE_architecture.png)
+
+**Scaling with multiprocessing([servers/processes_server.py](servers/processes_server.py))**
+
+![Scaling with multiprocessing](/images/06_multiprocessing_scale.png)
+
+You may start servers (not simultaneously) as:
+
+    python servers/simple_server.py
+   
+or 
+
+    python servers/processes_server.py
+
+and test them with:
+   
+    python servers/tester.py
+
+
+**Queues based(Kafka, RabbitMQ, etc)**
+
+![Queues based](/images/07_messages_based.png)
+
+**Serving with [tf-serving](https://www.tensorflow.org/serving/)**
 
 
 ## Testing
