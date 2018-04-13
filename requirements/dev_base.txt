@@ -1,0 +1,18 @@
+numpy
+ipython
+jupyter
+ipdb
+scikit-image
+tensorflow==1.6
+keras
+click
+opencv-python
+pytest
+h5py
+aiohttp
+redis
+# tensorflow-serving-api-python3
+line_profiler
+psutil
+gpustat
+asv

@@ -1,0 +1,76 @@
+FROM ubuntu:16.04
+
+# Setup locales
+RUN apt-get update && \
+    apt-get install -y locales && \
+    rm -rf /var/lib/apt/lists/* && \
+    locale-gen en_US.UTF-8 && \
+    export LC_ALL=C.UTF-8 && \
+    export LANGUAGE=en_US:en && \
+    export LANG=C.UTF-8
+ENV LANG en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8
+
+# install python3.6
+RUN apt-get update && \
+    apt-get install -y \
+        software-properties-common && \
+    add-apt-repository ppa:jonathonf/python-3.6 && \
+    apt-get update && \
+    apt-get install -y \
+        build-essential \
+        python3.6 \
+        python3.6-dev \
+        python3-pip \
+        python3.6-venv \
+        git && \
+    rm -rf /var/lib/apt/lists/*
+
+# update pip
+RUN python3.6 -m pip install pip --upgrade && \
+    python3.6 -m pip install wheel && \
+    ln -s /usr/bin/python3.6 /usr/bin/python
+
+# install bazel
+RUN apt-get update && \
+    apt-get install -y \
+        pkg-config \
+        zip \
+        g++ \
+        zlib1g-dev \
+        unzip \
+        wget && \
+    rm -rf /var/lib/apt/lists/* && \
+    wget https://github.com/bazelbuild/bazel/releases/download/0.5.4/bazel-0.5.4-installer-linux-x86_64.sh && \
+    chmod +x bazel-0.5.4-installer-linux-x86_64.sh && \
+    ./bazel-0.5.4-installer-linux-x86_64.sh
+
+# clone tensorflow
+RUN git clone https://github.com/tensorflow/tensorflow.git -b v1.6.0 && \
+    cd tensorflow
+
+# build tensorflow parts
+RUN cd tensorflow && \
+    bazel build tensorflow/tools/graph_transforms:transform_graph
+
+# # install redis
+# RUN mkdir Downloads && \
+#     cd Downloads && \
+#     wget http://download.redis.io/redis-stable.tar.gz && \
+#     tar xvzf redis-stable.tar.gz && \
+#     cd redis-stable && \
+#     make && \
+#     make install
+
+# copy our project
+ADD ./requirements /requirements
+
+# install requirements
+RUN pip install -r requirements/dev_ubuntu.txt
+
+# disable some warnings
+ENV PYTHONWARNINGS "ignore"
+ENV TF_CPP_MIN_LOG_LEVEL 3
+
+CMD ["/bin/bash"]

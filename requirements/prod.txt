@@ -1,0 +1,4 @@
+numpy
+scikit-image
+tensorflow==1.6
+opencv-python
