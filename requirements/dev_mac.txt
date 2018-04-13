@@ -1,3 +1,4 @@
 -r dev_base.txt
 http://download.pytorch.org/whl/torch-0.3.1-cp36-cp36m-macosx_10_7_x86_64.whl 
 torchvision
+-e .

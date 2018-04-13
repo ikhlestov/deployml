@@ -1,10 +1,6 @@
 import os
-import sys
 
-BASE_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-sys.path.insert(0, BASE_DIR)
-
-from constants import KERAS_SAVES_DIR
+from misc.constants import KERAS_SAVES_DIR
 from models.keras_model import Model
 
 

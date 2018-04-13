@@ -1,23 +1,108 @@
 import os
-import sys
-
-BASE_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-sys.path.insert(0, BASE_DIR)
 
 import click
 import numpy as np
 import tensorflow as tf
+from tensorflow.core.framework import graph_pb2
 
-from utils import measure_model
+from misc.utils import measure_model
+from misc.constants import TENSORFLOW_SAVES_DIR
 from models.tensorflow_model import Model
-from constants import TENSORFLOW_SAVES_DIR
+
+
+class BinaryModel:
+    def __init__(self, saves_dir, model_name, input_node_name, output_node_name):
+        # read binary file
+        binary_path = os.path.join(saves_dir, 'constant_graph.pb')
+        with tf.gfile.Open(binary_path, "rb") as f:
+            graph_def = tf.GraphDef()
+            graph_def.ParseFromString(f.read())
+
+        # load readed content to the graph
+        with tf.Graph().as_default() as new_graph:
+            tf.import_graph_def(graph_def, name="prefix")
+
+        # get input and output nodes
+        self.input = new_graph.get_tensor_by_name('prefix/%s:0' % input_node_name)
+        self.output = new_graph.get_tensor_by_name('prefix/%s:0' % output_node_name)
+
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        self.sess = tf.Session(graph=new_graph, config=config)
+
+    def predict(self, inputs):
+        feed_dict = {self.input: inputs}
+        pred = self.sess.run(self.output, feed_dict=feed_dict)
+        return pred
 
 
 @click.command()
 @click.option('-b', '--batch_size', type=int,
               help="Batch size for the sample input.")
 def main(batch_size, saves_dir=TENSORFLOW_SAVES_DIR):
-    pass
+    """
+    default model
+    frozen model
+    optimized frozen model
+    quantized model
+    """
+    batches = [1, 8, 16, 32, 64]
+    if batch_size:
+        batches = [batch_size]
+
+    for batch_size in batches:
+        print("Batch size: {}".format(batch_size))
+        batch = np.random.random((batch_size, 224, 224, 3))
+
+        # our default model
+        tf.reset_default_graph()
+        usual_model = Model()
+        measure_model(usual_model, "Usual model", batch)
+        usual_model.sess.close()
+
+        # our binary file
+        tf.reset_default_graph()
+        frozen_model = BinaryModel(
+            saves_dir=saves_dir,
+            model_name='constant_graph.pb',
+            input_node_name=Model.input_node_name,
+            output_node_name=Model.output_node_name
+        )
+        measure_model(frozen_model, "Frozen model", batch)
+        frozen_model.sess.close()
+
+        # binary file with some constant operations
+        tf.reset_default_graph()
+        optimized_frozen_model = BinaryModel(
+            saves_dir=saves_dir,
+            model_name='optimized_graph.pb',
+            input_node_name=Model.input_node_name,
+            output_node_name=Model.output_node_name
+        )
+        measure_model(optimized_frozen_model, "Optimized frozen model", batch)
+        optimized_frozen_model.sess.close()
+
+        # model quantized with bazel
+        tf.reset_default_graph()
+        optimized_frozen_model = BinaryModel(
+            saves_dir=saves_dir,
+            model_name='quantized_graph_bazel.pb',
+            input_node_name=Model.input_node_name,
+            output_node_name=Model.output_node_name
+        )
+        measure_model(optimized_frozen_model, "Quantized with bazel", batch)
+        optimized_frozen_model.sess.close()
+
+        # model quantized with python
+        tf.reset_default_graph()
+        optimized_frozen_model = BinaryModel(
+            saves_dir=saves_dir,
+            model_name='quantized_graph_python.pb',
+            input_node_name=Model.input_node_name,
+            output_node_name=Model.output_node_name
+        )
+        measure_model(optimized_frozen_model, "Quantized with python", batch)
+        optimized_frozen_model.sess.close()
 
 
 if __name__ == '__main__':

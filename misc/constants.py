@@ -1,6 +1,6 @@
 import os
 
-BASE_SAVES_DIR = 'saves'
+BASE_SAVES_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../saves')
 
 TENSORFLOW_SAVES_DIR = os.path.join(BASE_SAVES_DIR, 'tensorflow')
 KERAS_SAVES_DIR = os.path.join(BASE_SAVES_DIR, 'keras')

@@ -1,18 +1,10 @@
-import os
-import sys
-
-BASE_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-sys.path.insert(0, BASE_DIR)
-
 import click
 import numpy as np
 
 from models.pytorch_model import Model as PTModel
 from models.keras_model import Model as KerasModel
 from models.tensorflow_model import Model as TFModel
-from utils import measure_model
-
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+from misc.utils import measure_model
 
 
 @click.command()

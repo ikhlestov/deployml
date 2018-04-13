@@ -1,14 +1,9 @@
 import os
-import sys
-
-BASE_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-sys.path.insert(0, BASE_DIR)
 
 import keras
 import tensorflow as tf
-from tensorflow.python.tools.freeze_graph import freeze_graph
 
-from constants import KERAS_SAVES_DIR
+from misc.constants import KERAS_SAVES_DIR
 
 
 def main():
@@ -25,7 +20,6 @@ def main():
 
     session = keras.backend.get_session()
 
-    # graph_def = session.graph.as_graph_def()
     tf.train.Saver().save(session, save_path + '.ckpt')
     tf.train.write_graph(
         session.graph.as_graph_def(),

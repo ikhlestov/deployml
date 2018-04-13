@@ -1,3 +1,5 @@
+## Contents
+
 <!-- MarkdownTOC -->
 
 - [Pre-Requirements](#pre-requirements)
@@ -49,13 +51,17 @@ Notes:
     
     `docker run -v $(pwd):/deployml -it ikhlestov/deployml_dev /bin/bash`
 
+- Install our library
+
+    `cd /deployml && pip install -e .`
+
 - Run time measurements inside docker:
 
-    `cd /deployml && python benchmarks/compare_frameworks.py`
+    `python benchmarks/compare_frameworks.py`
 
 - Optional:
     
-    - setup local environment `python3.6 -m venv .venv && source .venv/bin/activate && pip install -r requirements/local_mac.txt`
+    - setup local environment `python3.6 -m venv .venv && source .venv/bin/activate && pip install -r requirements/dev_mac.txt`
     - Run time measurements for every model locally `python benchmarks/compare_frameworks.py`
 
 
@@ -67,13 +73,21 @@ Notes:
 
 2. Build frozen graph. More about it you may read [here](https://blog.metaflow.fr/tensorflow-how-to-freeze-a-model-and-serve-it-with-a-python-api-d4f3596b3adc)
 
+<!-- TODO: add image -->
+
     `python optimizers/get_frozen_graph.py`
 
+
 3. Build optimized frozen graph
+
+<!-- TODO: add image -->
     
     `python optimizers/get_optimized_frozen_graph.py`
 
+
 4. Get quantized graph:
+
+<!-- TODO: add image -->
     
     3.1. With bazel ([tensorflow tutorial](https://www.tensorflow.org/performance/quantization))
 
@@ -95,7 +109,9 @@ Notes:
 
     3.3 Note: [tf.contrib.quantize](https://www.tensorflow.org/api_docs/python/tf/contrib/quantize) provide only simulated quantization.
 
-5. Compare resulted graphs `python benchmarks/compare_tf_optimizations.py`
+5. Compare resulted graphs sizes `ls -l saves/tensorflow/`
+
+6. Compare resulted graphs performance `python benchmarks/compare_tf_optimizations.py`
 
 In case you want to run this code locally you should:
 
@@ -106,7 +122,9 @@ In case you want to run this code locally you should:
 
 ## Training optimization approaches
 
-You may also take a look at other methods ([list of resources](resources.md)) like:
+You may also take a look at other methods ([list of resources](optimization_approaches.md)) like:
+
+<!-- TODO: add images -->
 
 - More about pruning
 - Quantization
@@ -131,13 +149,10 @@ You may also take a look at other methods ([list of resources](resources.md)) li
 - Try to run two models on two different CPUs
 - Try to run two models on two CPU simultaneously
 
-<!---
-Where data preprocessing should be done? CPU or GPU or even another host?
--->
 
 ### Preprocessing and code testing
 
-Q: Where is preprocessing should be done - on CPU or GPU?
+Q: Where data preprocessing should be done? CPU or GPU or even another host?
 
 - enter to the preprocessing directory `cd preprocessing`
 - run various resizers benchmarks `python benchmark.py`
@@ -156,7 +171,7 @@ What else should be tested(really - as much as possible):
 - New models deploy
 - Any preprocessing
 - Corrupted inputs - Nan, Inf, zeros
-- Determinism
+- Deterministic output
 - Input ranges/distributions
 - Output ranges/distributions
 - Test that model will fail in known cases

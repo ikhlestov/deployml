@@ -18,5 +18,7 @@ def measure_model(model, model_name: str, input_batch,
         'max_cons': max(consumptions),
         'mean_cons': np.mean(consumptions),
     }
-    print("{model_name:<11} - min: {min_cons:.5f}, "
-          "mean: {mean_cons:.5f}, max: {max_cons:.5f}".format(**results))
+    print("min: {min_cons:.5f}, "
+          "mean: {mean_cons:.5f}, "
+          "max: {max_cons:.5f} "
+          "// {model_name:<11}".format(**results))
