@@ -124,11 +124,18 @@ In case you want to run this code locally you should:
 
 You may also take a look at other methods ([list of resources](optimization_approaches.md)) like:
 
-<!-- TODO: add images -->
+Pruning
 
-- More about pruning
-- XNOR nets
-- Knowledge distillation
+![Pruning](/images/02_pruning.jpg)
+
+XNOR nets
+
+![XNOR nets](/images/03_xnor_net.png)
+
+Knowledge distillation
+
+![Knowledge distillation](/images/04_distillation.png)
+
 
 
 ## Simple servers
