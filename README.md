@@ -127,7 +127,6 @@ You may also take a look at other methods ([list of resources](optimization_appr
 <!-- TODO: add images -->
 
 - More about pruning
-- Quantization
 - XNOR nets
 - Knowledge distillation
 
