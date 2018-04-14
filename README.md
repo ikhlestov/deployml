@@ -29,7 +29,6 @@
 
 - Docker. You may get it [here](https://docs.docker.com/install/)
 - Update docker memory limit if necessary
-<!-- - Fetch the docker image `docker pull ikhlestov/deployml_dev` -->
 - Git, Python>=3.5
 
 

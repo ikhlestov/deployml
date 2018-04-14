@@ -84,8 +84,8 @@ class Model:
             x = tf.layers.batch_normalization(x)
             x = tf.nn.relu(x)
             x = tf.layers.dense(x, 100)
-            x = tf.nn.sigmoid(x, name=self.output_node_name)
-            self.output = x
+        x = tf.nn.sigmoid(x, name=self.output_node_name)
+        self.output = x
 
         with tf.name_scope("training"):
             loss = tf.losses.softmax_cross_entropy(onehot_labels=self.labels, logits=x)
