@@ -117,6 +117,8 @@ Notes:
 
     `tensorboard --logdir saves/tensorboard --port 6060 --host=0.0.0.0 &`
 
+    If you've encountered error such "ModuleNotFoundError: No module named 'html5lib.filters.base'" please install another version of the html5lib `pip uninstall -y html5lib && pip install html5lib --no-cache`
+
 2. Build frozen graph. More about it you may read [here](https://blog.metaflow.fr/tensorflow-how-to-freeze-a-model-and-serve-it-with-a-python-api-d4f3596b3adc)
 
     `python optimizers/get_frozen_graph.py`
